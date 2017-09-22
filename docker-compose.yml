@@ -1,0 +1,31 @@
+version: '3.1'
+
+services:
+  code:
+    build: ./flask_app/
+    ports:
+      - "4040:4000"
+    links:
+      - "db:mysql"
+    command: /usr/local/bin/gunicorn -w 4 -b 0.0.0.0:4000 app:app --reload --error-logfile error.log --access-logfile access.log
+    volumes:
+      - ./flask_app:/sources
+
+  nginx:
+    build: ./nginx/
+    ports:
+     - "8080:80"
+    links:
+     - "code:code"
+    volumes:
+      - ./flask_app:/sources
+
+  db:
+    image: mysql
+    volumes:
+      - ./tmp:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: framgiatw
